@@ -1,8 +1,10 @@
 package com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.service;
 
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.CreatePersonUseCase;
+import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.GetPersonUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.out.PersonRepositoryPort;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.domain.exception.InvalidPersonDataException;
+import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.domain.exception.PersonNotFoundException;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.domain.model.Person;
 import org.springframework.stereotype.Service;
 
@@ -10,10 +12,11 @@ import org.springframework.stereotype.Service;
  * TODO: Service: ¿ClassUseCase, ClassAdapter?
  * Use Case Implementation
  * Application service that implements person-related use cases.
+ * The PersonService class implements multiple use case interfaces (inbound ports).
  * Orchestrates domain logic and coordinates with repository ports.
  */
 @Service
-public class PersonService implements CreatePersonUseCase {
+public class PersonService implements CreatePersonUseCase, GetPersonUseCase {
 
     private final PersonRepositoryPort personRepositoryPort;
 
@@ -65,5 +68,18 @@ public class PersonService implements CreatePersonUseCase {
         if (person.getHeight() == null || person.getHeight() <= 0) {
             throw new InvalidPersonDataException("Person height must be a positive number");
         }
+    }
+
+    /**
+     * Retrieves a person by their unique identifier.
+     *
+     * @param id the unique identifier of the person to retrieve
+     * @return the person domain object
+     * @throws PersonNotFoundException if no person with the given ID exists
+     */
+    @Override
+    public Person getPersonById(String id) {
+        return personRepositoryPort.findById(id)
+            .orElseThrow(() -> PersonNotFoundException.forId(id));
     }
 }

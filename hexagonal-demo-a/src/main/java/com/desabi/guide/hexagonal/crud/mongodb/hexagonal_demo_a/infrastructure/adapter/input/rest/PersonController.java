@@ -1,6 +1,7 @@
 package com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.infrastructure.adapter.input.rest;
 
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.CreatePersonUseCase;
+import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.GetPersonUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.domain.model.Person;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.infrastructure.adapter.input.rest.dto.PersonRequestDto;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.infrastructure.adapter.input.rest.dto.PersonResponseDto;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class PersonController {
 
     private final CreatePersonUseCase createPersonUseCase;
+    private final GetPersonUseCase getPersonUseCase;
     private final PersonDtoMapper personDtoMapper;
 
     /**
@@ -29,10 +31,11 @@ public class PersonController {
      * @param personDtoMapper the mapper for converting between DTOs and domain models
      */
     public PersonController(
-            CreatePersonUseCase createPersonUseCase,
+            CreatePersonUseCase createPersonUseCase, GetPersonUseCase getPersonUseCase,
             PersonDtoMapper personDtoMapper) {
         this.createPersonUseCase = createPersonUseCase;
-        this.personDtoMapper = personDtoMapper;
+      this.getPersonUseCase = getPersonUseCase;
+      this.personDtoMapper = personDtoMapper;
     }
 
     /**
@@ -55,5 +58,23 @@ public class PersonController {
         PersonResponseDto responseDto = personDtoMapper.toResponseDto(createdPerson);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+    }
+
+    /**
+     * Retrieves a person by their unique identifier.
+     *
+     * @param id the unique identifier of the person
+     * @return ResponseEntity with the person data and HTTP 200 status
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<PersonResponseDto> getPersonById(@PathVariable String id) {
+
+        // Execute use case
+        Person person = getPersonUseCase.getPersonById(id);
+
+        // Map domain model to response DTO
+        PersonResponseDto responseDto = personDtoMapper.toResponseDto(person);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 }
