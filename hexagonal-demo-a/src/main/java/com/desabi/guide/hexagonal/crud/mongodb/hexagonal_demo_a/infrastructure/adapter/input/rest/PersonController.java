@@ -1,0 +1,59 @@
+package com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.infrastructure.adapter.input.rest;
+
+import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.CreatePersonUseCase;
+import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.domain.model.Person;
+import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.infrastructure.adapter.input.rest.dto.PersonRequestDto;
+import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.infrastructure.adapter.input.rest.dto.PersonResponseDto;
+import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.infrastructure.adapter.input.rest.mapper.PersonDtoMapper;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * REST controller for person-related operations.
+ * Exposes HTTP endpoints for managing persons.
+ * Acts as an adapter between HTTP clients and the application core.
+ */
+@RestController
+@RequestMapping("/api/v1/persons")
+public class PersonController {
+
+    private final CreatePersonUseCase createPersonUseCase;
+    private final PersonDtoMapper personDtoMapper;
+
+    /**
+     * Constructor for PersonController.
+     *
+     * @param createPersonUseCase the use case for creating persons
+     * @param personDtoMapper the mapper for converting between DTOs and domain models
+     */
+    public PersonController(
+            CreatePersonUseCase createPersonUseCase,
+            PersonDtoMapper personDtoMapper) {
+        this.createPersonUseCase = createPersonUseCase;
+        this.personDtoMapper = personDtoMapper;
+    }
+
+    /**
+     * Creates a new person.
+     * 
+     * @param requestDto the person data from the request body
+     * @return ResponseEntity with the created person and HTTP 201 status
+     */
+    @PostMapping
+    public ResponseEntity<PersonResponseDto> createPerson(
+            @Valid @RequestBody PersonRequestDto requestDto) {
+        
+        // Map DTO to domain model
+        Person person = personDtoMapper.toDomain(requestDto);
+        
+        // Execute use case
+        Person createdPerson = createPersonUseCase.createPerson(person);
+        
+        // Map domain model to response DTO
+        PersonResponseDto responseDto = personDtoMapper.toResponseDto(createdPerson);
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+    }
+}

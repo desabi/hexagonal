@@ -1,0 +1,1 @@
+Contains the core business entities (Person) as pure domain objects, free from any framework dependencies or annotations
