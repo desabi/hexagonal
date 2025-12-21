@@ -1,6 +1,7 @@
 package com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.infrastructure.adapter.input.rest;
 
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.CreatePersonUseCase;
+import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.DeletePersonUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.GetPersonUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.ListPersonsUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.UpdatePersonUseCase;
@@ -27,6 +28,7 @@ public class PersonController {
     private final GetPersonUseCase getPersonUseCase;
     private final ListPersonsUseCase listPersonsUseCase;
     private final UpdatePersonUseCase updatePersonUseCase;
+    private final DeletePersonUseCase deletePersonUseCase;
     private final PersonDtoMapper personDtoMapper;
 
     /**
@@ -38,11 +40,13 @@ public class PersonController {
     public PersonController(
             CreatePersonUseCase createPersonUseCase, GetPersonUseCase getPersonUseCase,
         ListPersonsUseCase listPersonsUseCase, UpdatePersonUseCase updatePersonUseCase,
+        DeletePersonUseCase deletePersonUseCase,
             PersonDtoMapper personDtoMapper) {
         this.createPersonUseCase = createPersonUseCase;
       this.getPersonUseCase = getPersonUseCase;
       this.listPersonsUseCase = listPersonsUseCase;
       this.updatePersonUseCase = updatePersonUseCase;
+      this.deletePersonUseCase = deletePersonUseCase;
       this.personDtoMapper = personDtoMapper;
     }
 
@@ -127,5 +131,20 @@ public class PersonController {
         PersonResponseDto responseDto = personDtoMapper.toResponseDto(updatedPerson);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
+    /**
+     * Deletes a person by their unique identifier.
+     *
+     * @param id the unique identifier of the person to delete
+     * @return ResponseEntity with HTTP 204 No Content status
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePerson(@PathVariable String id) {
+
+        // Execute use case
+        deletePersonUseCase.deletePerson(id);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

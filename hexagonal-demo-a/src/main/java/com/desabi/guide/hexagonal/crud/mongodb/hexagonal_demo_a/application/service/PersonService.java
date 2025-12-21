@@ -1,6 +1,7 @@
 package com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.service;
 
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.CreatePersonUseCase;
+import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.DeletePersonUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.GetPersonUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.ListPersonsUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.UpdatePersonUseCase;
@@ -20,7 +21,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class PersonService implements CreatePersonUseCase, GetPersonUseCase, ListPersonsUseCase,
-    UpdatePersonUseCase {
+    UpdatePersonUseCase, DeletePersonUseCase {
 
     private final PersonRepositoryPort personRepositoryPort;
 
@@ -123,4 +124,22 @@ public class PersonService implements CreatePersonUseCase, GetPersonUseCase, Lis
         // Delegate to repository port
         return personRepositoryPort.save(updatedPerson);
     }
+    /**
+     * Deletes a person from the system by their unique identifier.
+     * Verifies the person exists before attempting deletion.
+     *
+     * @param id the unique identifier of the person to delete
+     * @throws PersonNotFoundException if no person with the given ID exists
+     */
+    @Override
+    public void deletePerson(String id) {
+        // Verify person exists before deletion
+        if (!personRepositoryPort.existsById(id)) {
+            throw PersonNotFoundException.forId(id);
+        }
+
+        // Delegate to repository port
+        personRepositoryPort.deleteById(id);
+    }
+
 }
