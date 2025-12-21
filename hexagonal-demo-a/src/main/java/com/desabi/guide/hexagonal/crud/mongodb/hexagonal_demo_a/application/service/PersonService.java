@@ -3,6 +3,7 @@ package com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.ser
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.CreatePersonUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.GetPersonUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.ListPersonsUseCase;
+import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.UpdatePersonUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.out.PersonRepositoryPort;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.domain.exception.InvalidPersonDataException;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.domain.exception.PersonNotFoundException;
@@ -18,7 +19,8 @@ import org.springframework.stereotype.Service;
  * Orchestrates domain logic and coordinates with repository ports.
  */
 @Service
-public class PersonService implements CreatePersonUseCase, GetPersonUseCase, ListPersonsUseCase {
+public class PersonService implements CreatePersonUseCase, GetPersonUseCase, ListPersonsUseCase,
+    UpdatePersonUseCase {
 
     private final PersonRepositoryPort personRepositoryPort;
 
@@ -93,5 +95,32 @@ public class PersonService implements CreatePersonUseCase, GetPersonUseCase, Lis
     @Override
     public List<Person> getAllPersons() {
         return personRepositoryPort.findAll();
+    }
+
+    /**
+     * Updates an existing person in the system.
+     * Validates the person data and verifies the person exists before updating.
+     *
+     * @param id the unique identifier of the person to update
+     * @param person the person domain object with updated data
+     * @return the updated person domain object
+     * @throws PersonNotFoundException if no person with the given ID exists
+     * @throws InvalidPersonDataException if the person data is invalid
+     */
+    @Override
+    public Person updatePerson(String id, Person person) {
+        // Verify person exists
+        if (!personRepositoryPort.existsById(id)) {
+            throw PersonNotFoundException.forId(id);
+        }
+
+        // Validate business rules
+        validatePerson(person);
+
+        // Create updated person with the correct ID
+        Person updatedPerson = new Person(id, person.getName(), person.getAge(), person.getHeight());
+
+        // Delegate to repository port
+        return personRepositoryPort.save(updatedPerson);
     }
 }

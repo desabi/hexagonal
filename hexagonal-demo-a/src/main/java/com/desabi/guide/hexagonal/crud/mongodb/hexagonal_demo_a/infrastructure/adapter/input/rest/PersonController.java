@@ -3,6 +3,7 @@ package com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.infrastructure.
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.CreatePersonUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.GetPersonUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.ListPersonsUseCase;
+import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.UpdatePersonUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.domain.model.Person;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.infrastructure.adapter.input.rest.dto.PersonRequestDto;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.infrastructure.adapter.input.rest.dto.PersonResponseDto;
@@ -25,6 +26,7 @@ public class PersonController {
     private final CreatePersonUseCase createPersonUseCase;
     private final GetPersonUseCase getPersonUseCase;
     private final ListPersonsUseCase listPersonsUseCase;
+    private final UpdatePersonUseCase updatePersonUseCase;
     private final PersonDtoMapper personDtoMapper;
 
     /**
@@ -35,11 +37,12 @@ public class PersonController {
      */
     public PersonController(
             CreatePersonUseCase createPersonUseCase, GetPersonUseCase getPersonUseCase,
-        ListPersonsUseCase listPersonsUseCase,
+        ListPersonsUseCase listPersonsUseCase, UpdatePersonUseCase updatePersonUseCase,
             PersonDtoMapper personDtoMapper) {
         this.createPersonUseCase = createPersonUseCase;
       this.getPersonUseCase = getPersonUseCase;
       this.listPersonsUseCase = listPersonsUseCase;
+      this.updatePersonUseCase = updatePersonUseCase;
       this.personDtoMapper = personDtoMapper;
     }
 
@@ -100,5 +103,29 @@ public class PersonController {
             .toList();
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDtos);
+    }
+
+    /**
+     * Updates an existing person.
+     *
+     * @param id the unique identifier of the person to update
+     * @param requestDto the updated person data from the request body
+     * @return ResponseEntity with the updated person and HTTP 200 status
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<PersonResponseDto> updatePerson(
+        @PathVariable String id,
+        @Valid @RequestBody PersonRequestDto requestDto) {
+
+        // Map DTO to domain model
+        Person person = personDtoMapper.toDomain(requestDto);
+
+        // Execute use case
+        Person updatedPerson = updatePersonUseCase.updatePerson(id, person);
+
+        // Map domain model to response DTO
+        PersonResponseDto responseDto = personDtoMapper.toResponseDto(updatedPerson);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 }
