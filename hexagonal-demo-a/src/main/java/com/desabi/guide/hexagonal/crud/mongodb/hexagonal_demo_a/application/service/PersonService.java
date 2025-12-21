@@ -2,10 +2,12 @@ package com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.ser
 
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.CreatePersonUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.GetPersonUseCase;
+import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.in.ListPersonsUseCase;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.application.port.out.PersonRepositoryPort;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.domain.exception.InvalidPersonDataException;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.domain.exception.PersonNotFoundException;
 import com.desabi.guide.hexagonal.crud.mongodb.hexagonal_demo_a.domain.model.Person;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 /**
@@ -16,7 +18,7 @@ import org.springframework.stereotype.Service;
  * Orchestrates domain logic and coordinates with repository ports.
  */
 @Service
-public class PersonService implements CreatePersonUseCase, GetPersonUseCase {
+public class PersonService implements CreatePersonUseCase, GetPersonUseCase, ListPersonsUseCase {
 
     private final PersonRepositoryPort personRepositoryPort;
 
@@ -81,5 +83,15 @@ public class PersonService implements CreatePersonUseCase, GetPersonUseCase {
     public Person getPersonById(String id) {
         return personRepositoryPort.findById(id)
             .orElseThrow(() -> PersonNotFoundException.forId(id));
+    }
+
+    /**
+     * Retrieves all persons from the system.
+     *
+     * @return a list of all person domain objects, or empty list if no persons exist
+     */
+    @Override
+    public List<Person> getAllPersons() {
+        return personRepositoryPort.findAll();
     }
 }
